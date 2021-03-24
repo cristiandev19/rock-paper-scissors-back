@@ -1,6 +1,16 @@
 const express    = require('express');
 
 const app        = express();
+
+const httpServer = require('http').createServer(app);
+
+const options = {
+  cors: {
+    origin: '*',
+  },
+};
+const io = require('socket.io')(httpServer, options);
+
 const cors       = require('cors');
 const bodyParser = require('body-parser');
 const passport      = require('passport');
@@ -38,6 +48,34 @@ app
   .use(logErrors)
   .use(errorHandler);
 
-app.listen(config.port, () => {
-  console.log(`Example app listening at http://localhost:${config.port}`);
+let interval;
+
+const getApiAndEmit = (socket) => {
+  const response = new Date();
+  // Emitting a new message. Will be consumed by the client
+  socket.emit('FromAPI', response);
+};
+
+io.on('connection', (socket) => {
+  console.log('new client of the socket');
+  /* ... */
+  if (interval) {
+    clearInterval(interval);
+  }
+  interval = setInterval(() => getApiAndEmit(socket), 1000);
+  socket.on('eventA', (inter) => {
+    console.log('client is subscribing to timer with interval ', inter);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
+    clearInterval(interval);
+  });
 });
+
+console.log('config.port', config.port);
+httpServer.listen(config.port);
+
+// app.listen(config.port, () => {
+//   console.log(`Example app listening at http://localhost:${config.port}`);
+// });
