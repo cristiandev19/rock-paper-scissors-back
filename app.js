@@ -48,28 +48,37 @@ app
   .use(logErrors)
   .use(errorHandler);
 
-let interval;
+// let interval;
 
-const getApiAndEmit = (socket) => {
-  const response = new Date();
-  // Emitting a new message. Will be consumed by the client
-  socket.emit('FromAPI', response);
-};
+// const getApiAndEmit = (socket) => {
+//   const response = new Date();
+//   // Emitting a new message. Will be consumed by the client
+//   socket.emit('FromAPI', response);
+// };
+let chosedHands = [];
 
 io.on('connection', (socket) => {
   console.log('new client of the socket');
   /* ... */
-  if (interval) {
-    clearInterval(interval);
-  }
-  interval = setInterval(() => getApiAndEmit(socket), 1000);
-  socket.on('eventA', (inter) => {
-    console.log('client is subscribing to timer with interval ', inter);
+  // if (interval) {
+  //   clearInterval(interval);
+  // }
+  // interval = setInterval(() => getApiAndEmit(socket), 1000);
+  socket.on('chosedHands', (chosedHand) => {
+    console.log('chosedHand', chosedHand);
+    // chosedHand 
+    // {
+    //   hand: 'rock | scissors | paper',
+    //   user: 'asdasdsa',
+    //   room: 'adadas',
+    // }
+    chosedHands = [...chosedHands, chosedHand];
+    console.log('chosedHands', chosedHands);
   });
 
   socket.on('disconnect', () => {
     console.log('Client disconnected');
-    clearInterval(interval);
+    // clearInterval(interval);
   });
 });
 
